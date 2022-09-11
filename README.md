@@ -24,6 +24,8 @@ or
 yarn add @giancosta86/sqlite-writable
 ```
 
+The public API entirely resides in the root package index, so you shouldn't reference specific modules.
+
 ## Usage
 
 The objects passed to the stream must be **plain JavaScript objects having a "type" string field**: as discussed below, such field enables the stream to select the actual SQL code to execute when performing serialization.
