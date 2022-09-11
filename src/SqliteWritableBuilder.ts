@@ -47,6 +47,21 @@ export class SqliteWritableBuilder {
     return this;
   }
 
+  withSafeType<T extends TypedObject>(
+    type: T["type"],
+    tableName: string,
+    columns: readonly string[],
+    mapper: (source: T) => StatementArguments
+  ): this {
+    const sql = `
+    INSERT OR IGNORE INTO ${tableName}
+    (${columns.join(", ")})
+    VALUES
+    (${Array(columns.length).fill("?").join(", ")})`;
+
+    return this.withType<T>(type, sql, mapper);
+  }
+
   withMaxObjectsInTransaction(maxObjectsInTransaction: number): this {
     this.maxObjectsInTransaction = maxObjectsInTransaction;
     return this;

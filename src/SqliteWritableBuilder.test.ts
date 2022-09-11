@@ -6,7 +6,8 @@ import {
   replaceDbWithCrashingFake,
   createTestWritable,
   createTestWritableBuilder,
-  withTestDb
+  withTestDb,
+  createSafeTestWritable
 } from "./test/db";
 import {
   getTransactionProperties,
@@ -379,6 +380,74 @@ describe("SQLite writable instantiated via builder", () => {
           expect(retrievedChipmunks).toEqual(new Set([cip, ciop]));
 
           expect(logger.errorMessages.length).toBe(1);
+        }));
+    });
+  });
+
+  describe("when registering safe types", () => {
+    it("should serialize a non-quantized number of objects of different types", () =>
+      withTestDb(async db => {
+        const [writable, logger] = createSafeTestWritable(db, 2);
+
+        const sourceAnimals = new Set([ciop, yogi, bubu, cip, bozo]);
+
+        await pipeline(Readable.from(sourceAnimals), writable);
+
+        const retrievedBears = retrieveBears(db);
+        const retrievedChipmunks = retrieveChipmunks(db);
+
+        expect(getTransactionProperties(logger)).toEqual<TransactionProperties>(
+          {
+            beginnings: 3,
+            objectsSavedInIntermediateCommits: [2, 2],
+            objectsSavedInFinalCommit: 1,
+            sqlErrors: 0
+          }
+        );
+
+        expect(retrievedBears).toEqual(new Set([yogi, bubu, bozo]));
+        expect(retrievedChipmunks).toEqual(new Set([cip, ciop]));
+
+        expect(logger.errorMessages).toEqual([]);
+      }));
+
+    describe("when a SQL error occurs", () => {
+      it("should go on without interrupting the flow", () =>
+        withTestDb(async db => {
+          const [writable, logger] = createSafeTestWritable(db, 2);
+
+          const sourceAnimals = new Set([
+            ciop,
+            yogi,
+            bubu,
+            fakeYogi,
+            fakeYogi,
+            fakeYogi,
+            fakeYogi,
+            fakeYogi,
+            fakeYogi,
+            cip,
+            bozo
+          ]);
+
+          await pipeline(Readable.from(sourceAnimals), writable);
+
+          const retrievedBears = retrieveBears(db);
+          const retrievedChipmunks = retrieveChipmunks(db);
+
+          expect(
+            getTransactionProperties(logger)
+          ).toEqual<TransactionProperties>({
+            beginnings: 3,
+            objectsSavedInIntermediateCommits: [2, 2],
+            objectsSavedInFinalCommit: 1,
+            sqlErrors: 0
+          });
+
+          expect(retrievedBears).toEqual(new Set([yogi, bubu, bozo]));
+          expect(retrievedChipmunks).toEqual(new Set([cip, ciop]));
+
+          expect(logger.errorMessages).toEqual([]);
         }));
     });
   });

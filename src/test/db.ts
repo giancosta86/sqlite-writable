@@ -65,6 +65,40 @@ export function createTestWritable(
   return [writable, logger];
 }
 
+export function createSafeTestWritableBuilder(): [
+  SqliteWritableBuilder,
+  ArrayLogger
+] {
+  const logger = new ArrayLogger();
+  const builder = new SqliteWritableBuilder()
+    .withLogger(logger)
+    .withSafeType<Bear>("bear", "bears", ["name", "age"], bear => [
+      bear.name,
+      bear.age
+    ])
+    .withSafeType<Chipmunk>(
+      "chipmunk",
+      "chipmunks",
+      ["name", "gathered_nuts"],
+      chipmunk => [chipmunk.name, chipmunk.gatheredNuts]
+    );
+
+  return [builder, logger];
+}
+
+export function createSafeTestWritable(
+  db: Database,
+  maxObjectsInTransaction: number
+): [Writable, ArrayLogger] {
+  const [builder, logger] = createSafeTestWritableBuilder();
+
+  const writable = builder
+    .withMaxObjectsInTransaction(maxObjectsInTransaction)
+    .build(db);
+
+  return [writable, logger];
+}
+
 export function replaceDbWithCrashingFake(sqlWritable: Writable): void {
   const fakeDb = {
     exec() {

@@ -14,10 +14,12 @@ export class Serializer {
     private readonly mapper: ObjectMapper
   ) {}
 
-  serialize(source: object) {
+  serialize(source: object): boolean {
     const statementArguments = this.mapper(source);
 
-    this.statement.run(statementArguments);
+    const runResult = this.statement.run(statementArguments);
+
+    return runResult.changes > 0;
   }
 }
 
@@ -127,8 +129,9 @@ export class SqliteWritable extends Writable {
     }
 
     try {
-      serializer.serialize(foundObject);
-      this.objectsInTransaction++;
+      if (serializer.serialize(foundObject)) {
+        this.objectsInTransaction++;
+      }
     } catch (err) {
       this.logger?.error(formatError(err));
       return;
