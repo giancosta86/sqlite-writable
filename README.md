@@ -60,12 +60,13 @@ const db: Database = open(":memory:");
 
 const writable = new SqliteWritableBuilder()
   .withLogger(logger)
-  .withType<Bear>(
+  .withSafeType<Bear>( //Recommended
     "bear",
-    "INSERT INTO bears (name, age) VALUES (?, ?)",
+    "bears",
+    ["name", "age"],
     bear => [bear.name, bear.age]
   )
-  .withType<Chipmunk>(
+  .withType<Chipmunk>( //For manual control
     "chipmunk",
     "INSERT INTO chipmunks (name, gathered_nuts) VALUES (?, ?)",
     chipmunk => [chipmunk.name, chipmunk.gatheredNuts]
@@ -77,9 +78,9 @@ const writable = new SqliteWritableBuilder()
 
 `SqliteWritableBuilder` supports the following `.with...()` methods:
 
-- `withType<T>(type, sql, mapper)` performs a **type registration**, telling the stream _how to serialize a given object type_. It requires:
+- `withSafeType<T>(type, sql, mapper)` performs a **type registration**, telling the stream _how to serialize a given object type_ - internally using the `INSERT OR IGNORE` SQLite statement. It requires:
 
-  - **T**, the _type parameter_. It must reference a type containing a **type** field of type `string` - including a string literal, which is actually recommended. For example, a supported type alias could be:
+  - `T`, the _type parameter_. It must reference a type containing a `type` field of type `string` - including a string literal, which is actually recommended. For example, a supported type alias could be:
 
     ```typescript
     type Bear = {
@@ -89,17 +90,19 @@ const writable = new SqliteWritableBuilder()
     };
     ```
 
-  * **type** is the `string` value that, when found in the **type** field of any object passing through the stream, will associate that object to the current type - thus triggering the related insertion statement.
+  * `type`: the `string` value that, when found in the `type` field of any object passing through the stream, will associate that object to the current type - thus triggering the related insertion statement.
 
     In the example above, you would just need to pass `"bear"`. The reason for such duplicated information resides in compiler dynamics - namely, _type erasure_
 
-  * **sql** is the `INSERT` SQL statement used to create the row in the db.
+  * `tableName`: the name of the table dedicated to the objects of type `T`
 
-    Within its `VALUES(...)` section, it should contain **?** placeholders to denote the object fields
+  * `columns`: an array of strings indicating the columns of the table that will receive the values provided by the `mapper` (described below)
 
-  * **mapper**: a function taking the current object passed to the stream and returning an arbitrary **array of arguments** to be passed to the insertion statement.
+  * `mapper`: a function taking the current object of type `T` passed to the stream and returning an arbitrary **array of arguments** to be passed to the insertion statement; in other words, this function turns an object of type `T` into a table row to be written to the db.
 
-    In other words, the array must contain as many values as the number of **?** placeholders in the SQL statement
+    The returned array must contain as many values as the number of colum names within the `columns` array, in the very same order
+
+- `withType<T>(type, sql, mapper)` performs a **customized type registration**, telling the stream _how to serialize a given object type_. It is similar to `withSafeType<T>()`, but allows you to pass custom SQLite code - which is why it knows nothing about `tableName` and `columns`
 
 - `withLogger(logger?)` registers a logger that will be notified about the stream activities - especially _errors_.
 
