@@ -7,14 +7,14 @@ import {
   createTestWritable,
   createTestWritableBuilder,
   withTestDb
-} from "./_db.test";
+} from "./test/db";
 import {
   getTransactionProperties,
   TransactionProperties
-} from "./_transactions.test";
-import { expectStreamError } from "./_stream.test";
-import { bubu, bozo, fakeYogi, retrieveBears, yogi } from "./_bears.test";
-import { cip, ciop, retrieveChipmunks } from "./_chipmunks.test";
+} from "./test/transactions";
+import { expectStreamError } from "./test/stream";
+import { bubu, bozo, fakeYogi, retrieveBears, yogi } from "./test/bears";
+import { cip, ciop, retrieveChipmunks } from "./test/chipmunks";
 
 describe("SQLite writable", () => {
   describe("construction", () => {

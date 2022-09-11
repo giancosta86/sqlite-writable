@@ -1,9 +1,9 @@
 import { Writable } from "node:stream";
 import open, { Database } from "better-sqlite3";
 import { ArrayLogger } from "@giancosta86/unified-logging";
-import { SqliteWritableBuilder } from ".";
-import { Bear } from "./_bears.test";
-import { Chipmunk } from "./_chipmunks.test";
+import { SqliteWritableBuilder } from "../index";
+import { Bear } from "./bears";
+import { Chipmunk } from "./chipmunks";
 
 export async function withTestDb(
   consumer: (db: Database) => Promise<void>
