@@ -1,7 +1,7 @@
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { ArrayLogger } from "@giancosta86/unified-logging";
-import { SqliteWritableBuilder } from ".";
+import { SqliteWritableBuilder } from "./SqliteWritableBuilder";
 import {
   replaceDbWithCrashingFake,
   createTestWritable,
@@ -16,8 +16,8 @@ import { expectStreamError } from "./test/stream";
 import { bubu, bozo, fakeYogi, retrieveBears, yogi } from "./test/bears";
 import { cip, ciop, retrieveChipmunks } from "./test/chipmunks";
 
-describe("SQLite writable", () => {
-  describe("construction", () => {
+describe("SQLite writable instantiated via builder", () => {
+  describe("upon construction", () => {
     describe("when the max number of objects in transaction is 0", () => {
       it("should throw", () =>
         withTestDb(async db => {

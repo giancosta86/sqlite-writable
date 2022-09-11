@@ -1,7 +1,7 @@
 import { Writable } from "node:stream";
 import open, { Database } from "better-sqlite3";
 import { ArrayLogger } from "@giancosta86/unified-logging";
-import { SqliteWritableBuilder } from "../index";
+import { SqliteWritableBuilder } from "../SqliteWritableBuilder";
 import { Bear } from "./bears";
 import { Chipmunk } from "./chipmunks";
 
