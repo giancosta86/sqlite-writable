@@ -1,6 +1,6 @@
 {
   "name": "@giancosta86/sqlite-writable",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Writable stream storing objects into a SQLite database",
   "keywords": [
     "SQLite",
@@ -41,8 +41,8 @@
     "test:prod": "jest dist --testPathIgnorePatterns=/_.+"
   },
   "dependencies": {
-    "@giancosta86/format-error": "^1.0.1",
-    "@giancosta86/unified-logging": "^1.2.0",
+    "@giancosta86/format-error": "^2.0.0",
+    "@giancosta86/unified-logging": "^2.0.0",
     "better-sqlite3": "^7.6.2"
   },
   "devDependencies": {
